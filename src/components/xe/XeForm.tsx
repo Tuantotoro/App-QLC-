@@ -176,12 +176,12 @@ export default function XeForm({ form }: Props) {
                 label="Giá mua xe"
                 rules={[{ required: coThongTinMua, message: "Nhập giá mua xe" }]}
               >
-                <InputNumber
+                <InputNumber<number>
                   style={{ width: "100%" }}
                   min={0}
                   step={10000000}
                   formatter={(v) => (v ? formatTien(Number(v)).replace("đ", "") : "")}
-                  parser={(v) => Number((v ?? "").replace(/\D/g, "")) as unknown as number}
+                  parser={(v) => Number((v ?? "").replace(/\D/g, ""))}
                   addonAfter="đ"
                 />
               </Form.Item>
@@ -206,12 +206,12 @@ export default function XeForm({ form }: Props) {
             </Col>
             <Col xs={24} sm={12}>
               <Form.Item name="giaTriThanhLy" label="Giá trị thanh lý ước tính (cuối kỳ)">
-                <InputNumber
+                <InputNumber<number>
                   style={{ width: "100%" }}
                   min={0}
                   step={5000000}
                   formatter={(v) => (v ? formatTien(Number(v)).replace("đ", "") : "")}
-                  parser={(v) => Number((v ?? "").replace(/\D/g, "")) as unknown as number}
+                  parser={(v) => Number((v ?? "").replace(/\D/g, ""))}
                   addonAfter="đ"
                   placeholder="Mặc định 0đ"
                 />
@@ -249,12 +249,12 @@ export default function XeForm({ form }: Props) {
                     label="Số tiền vay"
                     rules={[{ required: coVay, message: "Nhập số tiền vay" }]}
                   >
-                    <InputNumber
+                    <InputNumber<number>
                       style={{ width: "100%" }}
                       min={0}
                       step={10000000}
                       formatter={(v) => (v ? formatTien(Number(v)).replace("đ", "") : "")}
-                      parser={(v) => Number((v ?? "").replace(/\D/g, "")) as unknown as number}
+                      parser={(v) => Number((v ?? "").replace(/\D/g, ""))}
                       addonAfter="đ"
                     />
                   </Form.Item>
