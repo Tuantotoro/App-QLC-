@@ -45,7 +45,7 @@ export const NAV_BOTTOM_MOBILE: NavItem[] = [
   { key: "dashboard", href: "/", label: "Tổng quan", icon: <DashboardOutlined /> },
   { key: "chuyen", href: "/chuyen", label: "Chuyến", icon: <CarOutlined /> },
   { key: "cong-no", href: "/cong-no-phai-thu", label: "Công nợ", icon: <WalletOutlined /> },
-  { key: "khac", href: "/bao-cao", label: "Khác", icon: <FileTextOutlined /> },
+  { key: "khac", href: "/bao-cao", label: "Báo cáo", icon: <FileTextOutlined /> },
 ];
 
 export function matchKey(pathname: string): string {
