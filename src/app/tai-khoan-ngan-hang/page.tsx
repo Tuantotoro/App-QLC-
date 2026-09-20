@@ -6,13 +6,53 @@ import { Badge, Tag } from "antd";
 import { useData } from "@/store/DataContext";
 import DanhMucCrud, { GiaTriForm } from "@/components/shared/DanhMucCrud";
 import SoTien from "@/components/shared/SoTien";
+import type { CauHinhTheDau } from "@/components/shared/MobileTheDauTrang";
 import { tongHopTheoTaiKhoan } from "@/utils/aggregate";
+import { formatTien } from "@/utils/calc";
 import { SO_NGAY_QUA_HAN_DOI_CHIEU } from "@/utils/constants";
 import type { TaiKhoanNganHang } from "@/types";
 
 export default function TaiKhoanNganHangPage() {
   const { data, themTaiKhoanNganHang, capNhatTaiKhoanNganHang, xoaTaiKhoanNganHang } = useData();
   const tongHop = useMemo(() => tongHopTheoTaiKhoan(data), [data]);
+
+  // Thẻ đầu trang (điện thoại): số tài khoản -> tiền nhận/trả qua chuyển khoản -> việc cần đối chiếu.
+  // Không tính số dư vì app không theo dõi tiền mặt, chi phí và số dư đầu kỳ.
+  const theDauMobile = useMemo<CauHinhTheDau>(() => {
+    let daNhan = 0;
+    let daTra = 0;
+    let chuaDoiChieu = 0;
+    let quaHan = 0;
+    data.taiKhoanNganHangList.forEach((t) => {
+      const th = tongHop.get(t.id);
+      if (!th) return;
+      daNhan += th.daNhan;
+      daTra += th.daTra;
+      chuaDoiChieu += th.soChuaDoiChieu;
+      quaHan += th.soQuaHan;
+    });
+    const dangSuDung = data.taiKhoanNganHangList.filter((t) => t.dangHoatDong).length;
+    return {
+      phuDe: `${dangSuDung} đang sử dụng`,
+      nhanChinh: "Tổng số tài khoản",
+      giaTriChinh: data.taiKhoanNganHangList.length,
+      donVi: "tài khoản",
+      chiSo: [
+        { nhan: "Đã nhận (chuyển khoản)", giaTri: formatTien(daNhan) },
+        { nhan: "Đã trả (chuyển khoản)", giaTri: formatTien(daTra) },
+        {
+          nhan: "Chưa đối chiếu",
+          giaTri: `${chuaDoiChieu} khoản`,
+          tone: chuaDoiChieu > 0 ? "canh-bao" : undefined,
+        },
+        {
+          nhan: "Quá hạn đối chiếu",
+          giaTri: `${quaHan} khoản`,
+          tone: quaHan > 0 ? "nguy-hiem" : undefined,
+        },
+      ],
+    };
+  }, [data.taiKhoanNganHangList, tongHop]);
 
   function demSuDung(id: string) {
     return tongHop.get(id)?.soChuyen ?? 0;
@@ -120,6 +160,7 @@ export default function TaiKhoanNganHangPage() {
       demSuDung={demSuDung}
       chanXoa={chanXoa}
       giaTriMacDinh={{ dangHoatDong: true }}
+      theDauMobile={theDauMobile}
     />
   );
 }
