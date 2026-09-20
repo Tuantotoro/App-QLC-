@@ -6,6 +6,8 @@ import { SearchOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { useData, useLookup } from "@/store/DataContext";
 import { tongHopCongNoNguoiBocHang } from "@/utils/aggregate";
+import { formatTien } from "@/utils/calc";
+import type { CauHinhTheDau } from "@/components/shared/MobileTheDauTrang";
 import SoTien from "@/components/shared/SoTien";
 import TrangThaiTag from "@/components/shared/TrangThaiTag";
 import MobileDanhSachCongNo from "@/components/shared/MobileDanhSachCongNo";
@@ -20,8 +22,10 @@ export default function CongNoPhaiTraPage() {
   const screens = useBreakpoint();
   const isDesktop = screens.md;
 
+  const tatCa = useMemo(() => tongHopCongNoNguoiBocHang(data), [data]);
+
   const danhSach = useMemo(() => {
-    let ds = tongHopCongNoNguoiBocHang(data);
+    let ds = tatCa;
     if (chiHienConNo) ds = ds.filter((d) => d.tongConNo > 0);
     if (tuKhoa.trim()) {
       const tk = tuKhoa.toLowerCase();
@@ -29,8 +33,42 @@ export default function CongNoPhaiTraPage() {
         (nguoiBocHangMap.get(d.nguoiBocHangId)?.hoTen ?? "").toLowerCase().includes(tk)
       );
     }
-    return ds.sort((a, b) => b.tongConNo - a.tongConNo);
-  }, [data, chiHienConNo, tuKhoa, nguoiBocHangMap]);
+    return [...ds].sort((a, b) => b.tongConNo - a.tongConNo);
+  }, [tatCa, chiHienConNo, tuKhoa, nguoiBocHangMap]);
+
+  // Thẻ đầu trang (điện thoại): còn phải trả + tiến độ trả -> chia theo tình trạng trả -> người bốc bị nợ nhiều nhất.
+  // Tính trên toàn bộ công nợ, không đổi theo ô tìm kiếm hay nút "Còn nợ".
+  const theDau = useMemo<CauHinhTheDau>(() => {
+    const tongPhaiTra = tatCa.reduce((s, d) => s + d.tongPhaiTra, 0);
+    const tongDaTra = tatCa.reduce((s, d) => s + d.tongDaTra, 0);
+    const tongConNo = tatCa.reduce((s, d) => s + d.tongConNo, 0);
+    const dem = (tt: "chua_thu" | "mot_phan" | "da_thu_du") => tatCa.filter((d) => d.trangThai === tt).length;
+    const noNhieuNhat = tatCa.reduce<(typeof tatCa)[number] | null>(
+      (max, d) => (d.tongConNo > 0 && (!max || d.tongConNo > max.tongConNo) ? d : max),
+      null
+    );
+    return {
+      phuDe: `${tatCa.length} người bốc hàng có công nợ`,
+      nhanChinh: "Còn phải trả",
+      giaTriChinh: formatTien(tongConNo),
+      tienDo: {
+        phanTram: tongPhaiTra > 0 ? Math.round((tongDaTra / tongPhaiTra) * 100) : 0,
+        trai: `Đã trả ${formatTien(tongDaTra)}`,
+        phai: `Tổng ${formatTien(tongPhaiTra)}`,
+      },
+      chiSo: [
+        { nhan: "Chưa trả", giaTri: dem("chua_thu") },
+        { nhan: "Trả một phần", giaTri: dem("mot_phan") },
+        { nhan: "Đã trả đủ", giaTri: dem("da_thu_du") },
+        {
+          nhan: "Nợ nhiều nhất",
+          giaTri: noNhieuNhat ? formatTien(noNhieuNhat.tongConNo) : "—",
+          phu: noNhieuNhat ? nguoiBocHangMap.get(noNhieuNhat.nguoiBocHangId)?.hoTen ?? "—" : undefined,
+          tone: noNhieuNhat ? "nguy-hiem" : undefined,
+        },
+      ],
+    };
+  }, [tatCa, nguoiBocHangMap]);
 
   const mucDanhSach = useMemo(
     () =>
@@ -47,14 +85,20 @@ export default function CongNoPhaiTraPage() {
 
   return (
     <div>
-      <Typography.Title level={4} style={{ marginTop: 0 }}>
-        Công nợ phải trả
-      </Typography.Title>
-      <Typography.Text type="secondary">Danh sách công nợ theo từng người bốc hàng</Typography.Text>
+      {isDesktop && (
+        <>
+          <Typography.Title level={4} style={{ marginTop: 0 }}>
+            Công nợ phải trả
+          </Typography.Title>
+          <Typography.Text type="secondary">Danh sách công nợ theo từng người bốc hàng</Typography.Text>
+        </>
+      )}
 
       {!isDesktop ? (
-        <div style={{ marginTop: 12 }}>
+        <div>
           <MobileDanhSachCongNo
+            tieuDe="Công nợ phải trả"
+            theDau={theDau}
             danhSach={mucDanhSach}
             kieu="tra"
             hrefPrefix="/cong-no-phai-tra/chi-tiet?id="
