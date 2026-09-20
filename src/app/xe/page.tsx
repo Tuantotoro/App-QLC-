@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Tag,
   Table,
@@ -26,7 +26,8 @@ import XeForm, {
   type XeFormInternalShape,
 } from "@/components/xe/XeForm";
 import SoTien from "@/components/shared/SoTien";
-import { layCacChieuCuaChuyen } from "@/utils/calc";
+import MobileTheDauTrang, { type CauHinhTheDau } from "@/components/shared/MobileTheDauTrang";
+import { formatTien, layCacChieuCuaChuyen } from "@/utils/calc";
 import { tinhChiPhiCoDinhXeThang } from "@/utils/khauHaoVay";
 import type { Xe } from "@/types";
 
@@ -83,6 +84,36 @@ export default function XePage() {
   const duLieuDaLoc = data.xeList.filter((xe) =>
     tuKhoa.trim() ? xe.bienSo.toLowerCase().includes(tuKhoa.toLowerCase()) : true
   );
+
+  // Thẻ đầu trang (điện thoại): số xe -> đang hoạt động/ngừng -> chi phí cố định mỗi tháng
+  const theDauMobile = useMemo<CauHinhTheDau>(() => {
+    const tong = data.xeList.length;
+    const dangHoatDong = data.xeList.filter((x) => x.dangHoatDong).length;
+    const xeCoThongTinMua = data.xeList.filter((x) => x.thongTinMua);
+    let khauHao = 0;
+    let laiVay = 0;
+    xeCoThongTinMua.forEach((x) => {
+      const cp = tinhChiPhiCoDinhXeThang(x.thongTinMua);
+      khauHao += cp.khauHaoThang;
+      laiVay += cp.laiVayThang;
+    });
+    return {
+      phuDe: "Xe vận chuyển, theo dõi khấu hao & lãi vay",
+      nhanChinh: "Tổng số xe",
+      giaTriChinh: tong,
+      donVi: "xe",
+      chiSo: [
+        { nhan: "Đang hoạt động", giaTri: dangHoatDong },
+        { nhan: "Ngừng hoạt động", giaTri: tong - dangHoatDong },
+        {
+          nhan: "Khấu hao / tháng",
+          giaTri: formatTien(khauHao),
+          phu: `${xeCoThongTinMua.length} xe có thông tin mua`,
+        },
+        { nhan: "Lãi vay / tháng", giaTri: formatTien(laiVay) },
+      ],
+    };
+  }, [data.xeList]);
 
   function formatShort(n: number) {
     return new Intl.NumberFormat("vi-VN").format(Math.round(n)) + "đ";
@@ -155,32 +186,38 @@ export default function XePage() {
 
   return (
     <div>
-      <Space style={{ width: "100%", justifyContent: "space-between", marginBottom: 16 }} align="start">
-        <div>
-          <Typography.Title level={4} style={{ margin: 0 }}>
-            Xe
-          </Typography.Title>
-          <Typography.Text type="secondary">
-            Danh sách xe đang sử dụng để vận chuyển - có thể theo dõi khấu hao & lãi vay mua xe
-          </Typography.Text>
-        </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={moModalThem}>
-          Thêm xe
-        </Button>
-      </Space>
+      {isDesktop && (
+        <Space style={{ width: "100%", justifyContent: "space-between", marginBottom: 16 }} align="start">
+          <div>
+            <Typography.Title level={4} style={{ margin: 0 }}>
+              Xe
+            </Typography.Title>
+            <Typography.Text type="secondary">
+              Danh sách xe đang sử dụng để vận chuyển - có thể theo dõi khấu hao & lãi vay mua xe
+            </Typography.Text>
+          </div>
+          <Button type="primary" icon={<PlusOutlined />} onClick={moModalThem}>
+            Thêm xe
+          </Button>
+        </Space>
+      )}
 
       {!isDesktop ? (
         <>
-          <div className="mobile-chuyen-searchbar">
+          <MobileTheDauTrang
+            tieuDe="Xe"
+            hanhDong={{ nhan: "Thêm", onClick: moModalThem }}
+            {...theDauMobile}
+          >
             <Input
               placeholder="Tìm xe..."
               prefix={<SearchOutlined style={{ color: "#8a8672" }} />}
               value={tuKhoa}
               onChange={(e) => setTuKhoa(e.target.value)}
               allowClear
-              style={{ flex: 1, borderRadius: 10 }}
+              style={{ borderRadius: 12, height: 40 }}
             />
-          </div>
+          </MobileTheDauTrang>
 
           {duLieuDaLoc.length === 0 ? (
             <Empty description="Không tìm thấy xe nào" style={{ margin: "32px 0" }} />
