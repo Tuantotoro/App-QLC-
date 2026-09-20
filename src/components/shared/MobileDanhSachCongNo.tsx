@@ -1,12 +1,13 @@
 "use client";
 
 import React from "react";
-import { Input, Empty, Segmented } from "antd";
+import { Input, Empty } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import type { TrangThaiThanhToan } from "@/types";
 import SoTien from "@/components/shared/SoTien";
 import TrangThaiTag from "@/components/shared/TrangThaiTag";
+import MobileTheDauTrang, { type CauHinhTheDau } from "@/components/shared/MobileTheDauTrang";
 
 export interface MucCongNo {
   id: string;
@@ -18,6 +19,10 @@ export interface MucCongNo {
 }
 
 interface Props {
+  /** Tiêu đề của thẻ đầu trang (VD: "Công nợ phải thu"). */
+  tieuDe: string;
+  /** Nội dung thẻ đầu trang: số lớn, tiến độ, chỉ số chi tiết. */
+  theDau: CauHinhTheDau;
   danhSach: MucCongNo[];
   kieu: "thu" | "tra";
   hrefPrefix: string; // VD: "/cong-no-phai-thu/chi-tiet?id="
@@ -30,6 +35,8 @@ interface Props {
 }
 
 export default function MobileDanhSachCongNo({
+  tieuDe,
+  theDau,
   danhSach,
   kieu,
   hrefPrefix,
@@ -42,25 +49,32 @@ export default function MobileDanhSachCongNo({
 }: Props) {
   return (
     <div>
-      <div className="mobile-congno-toolbar">
+      <MobileTheDauTrang tieuDe={tieuDe} {...theDau}>
         <Input
           placeholder={placeholderTimKiem}
           prefix={<SearchOutlined style={{ color: "#8a8672" }} />}
           value={tuKhoa}
           onChange={(e) => onChangeTuKhoa(e.target.value)}
           allowClear
-          style={{ borderRadius: 10 }}
+          style={{ borderRadius: 12, height: 40 }}
         />
-        <Segmented
-          block
-          value={chiHienConNo ? "con-no" : "tat-ca"}
-          onChange={(v) => onChangeChiHienConNo(v === "con-no")}
-          options={[
-            { label: "Tất cả", value: "tat-ca" },
-            { label: "Còn nợ", value: "con-no" },
-          ]}
-        />
-      </div>
+        <div className="mobile-the-toggle" role="group" aria-label="Lọc công nợ">
+          <button
+            type="button"
+            className={!chiHienConNo ? "dang-chon" : ""}
+            onClick={() => onChangeChiHienConNo(false)}
+          >
+            Tất cả
+          </button>
+          <button
+            type="button"
+            className={chiHienConNo ? "dang-chon" : ""}
+            onClick={() => onChangeChiHienConNo(true)}
+          >
+            Còn nợ
+          </button>
+        </div>
+      </MobileTheDauTrang>
 
       {danhSach.length === 0 ? (
         <Empty description="Không có dữ liệu công nợ" style={{ margin: "32px 0" }} />
