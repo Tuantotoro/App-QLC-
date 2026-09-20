@@ -192,7 +192,7 @@ export default function MobileDanhSachChuyen({
                       className="mobile-trip-card-profit"
                       style={{ color: loiNhuan >= 0 ? "#1B7A43" : "#C0392B" }}
                     >
-                      Lãi: {formatTien(loiNhuan)}
+                      {loiNhuan >= 0 ? "Lãi" : "Lỗ"}: {formatTien(Math.abs(loiNhuan))}
                     </span>
                   </div>
                 </div>
