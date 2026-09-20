@@ -72,17 +72,23 @@ export default function MobileTongQuan({
     <div>
       {/* Hero: số tiền còn phải thu - chỉ số quan trọng nhất khi liếc nhanh trên điện thoại */}
       <div className="mobile-hero-card">
-        {/* Bộ lọc thời gian thu gọn thành 1 dòng chữ trên thẻ - chạm để mở bảng chọn */}
-        <button
-          type="button"
-          className="mobile-hero-filter"
-          onClick={() => setMoChonThoiGian(true)}
-          aria-label="Đổi khoảng thời gian"
-        >
-          <CalendarOutlined />
-          <span>{nhanBoLocThoiGian(loaiFilter, tuyChon)}</span>
-          <DownOutlined style={{ fontSize: 10 }} />
-        </button>
+        {/* Hàng đầu thẻ: "Tổng quan" bên trái, bộ lọc thời gian bên phải */}
+        <div className="mobile-hero-top">
+          <div>
+            <div className="mobile-hero-title">Tổng quan</div>
+            <div className="mobile-hero-subtitle">{tongHop.tongChuyen} chuyến trong kỳ</div>
+          </div>
+          <button
+            type="button"
+            className="mobile-hero-filter"
+            onClick={() => setMoChonThoiGian(true)}
+            aria-label="Đổi khoảng thời gian"
+          >
+            <CalendarOutlined />
+            <span>{nhanBoLocThoiGian(loaiFilter, tuyChon)}</span>
+            <DownOutlined style={{ fontSize: 10 }} />
+          </button>
+        </div>
         <div className="mobile-hero-label">Còn phải thu</div>
         <div className="mobile-hero-value">{formatTien(tongHop.tongConPhaiThu)}</div>
         <div className="mobile-hero-bar-track">
@@ -94,14 +100,8 @@ export default function MobileTongQuan({
         </div>
       </div>
 
-      {/* Dải chỉ số phụ - vuốt ngang để xem thêm, không chiếm hết chiều cao màn hình */}
+      {/* Dải chỉ số phụ - lưới 2x2 cố định, không vuốt ngang */}
       <div className="mobile-stat-scroll">
-        <div className="mobile-stat-chip">
-          <div className="mobile-stat-chip-label">
-            <CarOutlined /> Tổng chuyến
-          </div>
-          <div className="mobile-stat-chip-value">{tongHop.tongChuyen}</div>
-        </div>
         <div className="mobile-stat-chip">
           <div className="mobile-stat-chip-label">
             <ShoppingOutlined /> Giá trị hàng
