@@ -280,6 +280,50 @@ a {
   color: #b9b6a6;
 }
 
+/* ---- Mobile "Chuyến xe": thẻ đầu trang (chuyến đi, số chuyến, tìm kiếm) ---- */
+.mobile-chuyen-hero {
+  margin-bottom: 14px;
+}
+
+.mobile-chuyen-hero .mobile-hero-value {
+  margin-bottom: 14px;
+}
+
+.mobile-chuyen-hero-unit {
+  margin-left: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.mobile-chuyen-hero-filter {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-top: -4px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.mobile-chuyen-hero-filter:active {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.mobile-chuyen-hero-filter .mobile-chuyen-filter-dot {
+  top: 4px;
+  right: 4px;
+  border: 1.5px solid #1b7a43;
+  box-sizing: content-box;
+}
+
 /* ---- Mobile "Chuyến xe" (danh sách chuyến) ---- */
 .mobile-chuyen-searchbar {
   position: sticky;
