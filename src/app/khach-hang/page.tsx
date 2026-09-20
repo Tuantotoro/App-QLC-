@@ -1,13 +1,40 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useData } from "@/store/DataContext";
 import DanhMucCrud, { GiaTriForm } from "@/components/shared/DanhMucCrud";
-import { layCacChieuCuaChuyen } from "@/utils/calc";
+import type { CauHinhTheDau } from "@/components/shared/MobileTheDauTrang";
+import { tongHopCongNoKhachHang } from "@/utils/aggregate";
+import { formatTien, layCacChieuCuaChuyen } from "@/utils/calc";
 import type { KhachHang } from "@/types";
 
 export default function KhachHangPage() {
   const { data, themKhachHang, capNhatKhachHang, xoaKhachHang } = useData();
+
+  // Thẻ đầu trang (điện thoại): số khách -> khách đã có chuyến/còn nợ -> tiền đã thu/còn phải thu
+  const theDauMobile = useMemo<CauHinhTheDau>(() => {
+    const idTrongDanhSach = new Set(data.khachHangList.map((k) => k.id));
+    const congNo = tongHopCongNoKhachHang(data).filter((c) => idTrongDanhSach.has(c.khachHangId));
+    const dangConNo = congNo.filter((c) => c.tongConNo > 0).length;
+    const daThu = congNo.reduce((s, c) => s + c.tongDaThu, 0);
+    const conPhaiThu = congNo.reduce((s, c) => s + c.tongConNo, 0);
+    return {
+      phuDe: "Khách đặt vận chuyển hàng hóa",
+      nhanChinh: "Tổng số khách hàng",
+      giaTriChinh: data.khachHangList.length,
+      donVi: "khách",
+      chiSo: [
+        { nhan: "Đã có chuyến", giaTri: congNo.length },
+        { nhan: "Đang còn nợ", giaTri: dangConNo },
+        { nhan: "Đã thu", giaTri: formatTien(daThu) },
+        {
+          nhan: "Còn phải thu",
+          giaTri: formatTien(conPhaiThu),
+          tone: conPhaiThu > 0 ? "nguy-hiem" : undefined,
+        },
+      ],
+    };
+  }, [data]);
 
   function demSuDung(id: string) {
     return data.chuyenList.filter((c) =>
@@ -43,6 +70,7 @@ export default function KhachHangPage() {
       onSua={(id, v) => capNhatKhachHang(id, v as Partial<KhachHang>)}
       onXoa={xoaKhachHang}
       demSuDung={demSuDung}
+      theDauMobile={theDauMobile}
     />
   );
 }
