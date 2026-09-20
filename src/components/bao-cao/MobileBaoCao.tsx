@@ -1,15 +1,22 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, Empty } from "antd";
 import {
   CarOutlined,
   ShoppingOutlined,
   DollarOutlined,
   WalletOutlined,
+  CalendarOutlined,
+  DownOutlined,
 } from "@ant-design/icons";
-import type { KhachHang, LoaiHang, TaiXe, Xe } from "@/types";
+import type { Dayjs } from "dayjs";
+import type { KhachHang, LoaiHang, TaiXe, Xe, FilterKhoangThoiGian } from "@/types";
 import { formatTien, formatSoLuong } from "@/utils/calc";
+import ChonThoiGianSheet, {
+  nhanBoLocThoiGian,
+  type KhoangTuyChon,
+} from "@/components/dashboard/ChonThoiGianSheet";
 
 interface TongHop {
   giaTriHang: number;
@@ -52,6 +59,11 @@ interface Props {
   taiXeMap: Map<string, TaiXe>;
   khachHangMap: Map<string, KhachHang>;
   loaiHangMap: Map<string, LoaiHang>;
+  /** Bộ lọc thời gian đang áp dụng cho các số trên thẻ. */
+  loaiFilter: FilterKhoangThoiGian;
+  tuyChon: KhoangTuyChon;
+  onChonMocThoiGian: (loai: FilterKhoangThoiGian) => void;
+  onChonKhoangTuyChon: (khoang: [Dayjs, Dayjs]) => void;
 }
 
 export default function MobileBaoCao({
@@ -64,7 +76,12 @@ export default function MobileBaoCao({
   taiXeMap,
   khachHangMap,
   loaiHangMap,
+  loaiFilter,
+  tuyChon,
+  onChonMocThoiGian,
+  onChonKhoangTuyChon,
 }: Props) {
+  const [moChonThoiGian, setMoChonThoiGian] = useState(false);
   const conPhaiThu = tongHop.phaiThu - tongHop.daThu;
   const conPhaiTraBoc = tongHop.phaiTraBoc - tongHop.daTraBoc;
   const tyLeDaThu = tongHop.phaiThu > 0 ? Math.min(100, Math.round((tongHop.daThu / tongHop.phaiThu) * 100)) : 0;
@@ -73,7 +90,24 @@ export default function MobileBaoCao({
     <div>
       {/* Hero: chỉ số quan trọng nhất - còn phải thu, kèm thanh tiến độ đã thu */}
       <div className="mobile-hero-card">
-        <div className="mobile-hero-label">Còn phải thu ({soChuyen} chuyến)</div>
+        {/* Hàng đầu thẻ: "Báo cáo" bên trái, bộ lọc thời gian bên phải */}
+        <div className="mobile-hero-top">
+          <div>
+            <div className="mobile-hero-title">Báo cáo</div>
+            <div className="mobile-hero-subtitle">{soChuyen} chuyến trong kỳ</div>
+          </div>
+          <button
+            type="button"
+            className="mobile-hero-filter"
+            onClick={() => setMoChonThoiGian(true)}
+            aria-label="Đổi khoảng thời gian"
+          >
+            <CalendarOutlined />
+            <span>{nhanBoLocThoiGian(loaiFilter, tuyChon)}</span>
+            <DownOutlined style={{ fontSize: 10 }} />
+          </button>
+        </div>
+        <div className="mobile-hero-label">Còn phải thu</div>
         <div className="mobile-hero-value">{formatTien(conPhaiThu)}</div>
         <div className="mobile-hero-bar-track">
           <div className="mobile-hero-bar-fill" style={{ width: `${tyLeDaThu}%` }} />
@@ -219,6 +253,15 @@ export default function MobileBaoCao({
           })
         )}
       </Card>
+
+      <ChonThoiGianSheet
+        open={moChonThoiGian}
+        onDong={() => setMoChonThoiGian(false)}
+        loai={loaiFilter}
+        tuyChon={tuyChon}
+        onChonMoc={onChonMocThoiGian}
+        onChonKhoang={onChonKhoangTuyChon}
+      />
     </div>
   );
 }
