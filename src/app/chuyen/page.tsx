@@ -76,21 +76,23 @@ export default function DanhSachChuyenPage() {
 
   return (
     <div>
-      <Row justify="space-between" align="middle" gutter={[12, 12]} style={{ marginBottom: 16 }}>
-        <Col>
-          <Typography.Title level={4} style={{ margin: 0 }}>
-            Chuyến xe
-          </Typography.Title>
-          <Typography.Text type="secondary">{danhSach.length} chuyến</Typography.Text>
-        </Col>
-        <Col className="an-tren-mobile">
-          <Link href="/chuyen/tao">
-            <Button type="primary" icon={<PlusOutlined />}>
-              Tạo chuyến
-            </Button>
-          </Link>
-        </Col>
-      </Row>
+      {isDesktop && (
+        <Row justify="space-between" align="middle" gutter={[12, 12]} style={{ marginBottom: 16 }}>
+          <Col>
+            <Typography.Title level={4} style={{ margin: 0 }}>
+              Chuyến xe
+            </Typography.Title>
+            <Typography.Text type="secondary">{danhSach.length} chuyến</Typography.Text>
+          </Col>
+          <Col className="an-tren-mobile">
+            <Link href="/chuyen/tao">
+              <Button type="primary" icon={<PlusOutlined />}>
+                Tạo chuyến
+              </Button>
+            </Link>
+          </Col>
+        </Row>
+      )}
 
       {!isDesktop ? (
         <MobileDanhSachChuyen
