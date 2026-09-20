@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Input, Drawer, Select, Button, Empty, Space, Badge } from "antd";
+import { Input, Drawer, Select, Button, Empty, Space } from "antd";
 import { SearchOutlined, FilterOutlined, CarOutlined, SwapOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import Link from "next/link";
@@ -23,6 +23,7 @@ import {
 import SoTien from "@/components/shared/SoTien";
 import TrangThaiTag from "@/components/shared/TrangThaiTag";
 import BoLocThoiGian from "@/components/shared/BoLocThoiGian";
+import { nhanBoLocThoiGian } from "@/components/dashboard/ChonThoiGianSheet";
 
 interface Props {
   danhSach: Chuyen[];
@@ -64,24 +65,36 @@ export default function MobileDanhSachChuyen({
 
   return (
     <div>
-      <div className="mobile-chuyen-searchbar">
+      {/* Thẻ đầu trang: cùng kiểu thẻ "Tổng quan" nhưng nội dung là chuyến đi, số chuyến và ô tìm kiếm */}
+      <div className="mobile-hero-card mobile-chuyen-hero">
+        <div className="mobile-hero-top">
+          <div>
+            <div className="mobile-hero-title">Chuyến đi</div>
+            <div className="mobile-hero-subtitle">{nhanBoLocThoiGian(loaiFilter, tuyChon)}</div>
+          </div>
+          <button
+            type="button"
+            className="mobile-chuyen-hero-filter"
+            aria-label="Bộ lọc"
+            onClick={() => setOpenLoc(true)}
+          >
+            <FilterOutlined />
+            {soLuongDangLoc > 0 && <span className="mobile-chuyen-filter-dot" />}
+          </button>
+        </div>
+        <div className="mobile-hero-label">Số chuyến</div>
+        <div className="mobile-hero-value mobile-chuyen-hero-value">
+          {danhSach.length}
+          <span className="mobile-chuyen-hero-unit">chuyến</span>
+        </div>
         <Input
           placeholder="Tìm theo biển số, tài xế..."
           prefix={<SearchOutlined style={{ color: "#8a8672" }} />}
           value={tuKhoa}
           onChange={(e) => onChangeTuKhoa(e.target.value)}
           allowClear
-          style={{ flex: 1, borderRadius: 10 }}
+          style={{ borderRadius: 12, height: 40 }}
         />
-        <Badge dot={soLuongDangLoc > 0} offset={[-6, 6]}>
-          <button
-            className="mobile-chuyen-filter-btn"
-            aria-label="Bộ lọc"
-            onClick={() => setOpenLoc(true)}
-          >
-            <FilterOutlined />
-          </button>
-        </Badge>
       </div>
 
       {danhSach.length === 0 ? (
