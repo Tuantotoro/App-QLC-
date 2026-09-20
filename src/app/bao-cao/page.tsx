@@ -134,21 +134,23 @@ export default function BaoCaoPage() {
 
   return (
     <div>
-      <Row justify="space-between" align="middle" gutter={[12, 12]} style={{ marginBottom: 16 }}>
-        <Col>
-          <Typography.Title level={4} style={{ margin: 0 }}>
-            Báo cáo
-          </Typography.Title>
-          <Typography.Text type="secondary">{chuyenDaLoc.length} chuyến trong khoảng đã chọn</Typography.Text>
-        </Col>
-        <Col xs={24} sm="auto">
-          <BoLocThoiGian
-            value={loaiFilter}
-            onChange={setLoaiFilter}
-            onChangeKhoangTuyChon={setTuyChon}
-          />
-        </Col>
-      </Row>
+      {isDesktop && (
+        <Row justify="space-between" align="middle" gutter={[12, 12]} style={{ marginBottom: 16 }}>
+          <Col>
+            <Typography.Title level={4} style={{ margin: 0 }}>
+              Báo cáo
+            </Typography.Title>
+            <Typography.Text type="secondary">{chuyenDaLoc.length} chuyến trong khoảng đã chọn</Typography.Text>
+          </Col>
+          <Col xs={24} sm="auto">
+            <BoLocThoiGian
+              value={loaiFilter}
+              onChange={setLoaiFilter}
+              onChangeKhoangTuyChon={setTuyChon}
+            />
+          </Col>
+        </Row>
+      )}
 
       {!isDesktop ? (
         <MobileBaoCao
@@ -161,6 +163,13 @@ export default function BaoCaoPage() {
           taiXeMap={taiXeMap}
           khachHangMap={khachHangMap}
           loaiHangMap={loaiHangMap}
+          loaiFilter={loaiFilter}
+          tuyChon={tuyChon}
+          onChonMocThoiGian={setLoaiFilter}
+          onChonKhoangTuyChon={(khoang) => {
+            setTuyChon(khoang);
+            setLoaiFilter("khoang_tuy_chon");
+          }}
         />
       ) : (
         <>
