@@ -1,0 +1,1688 @@
+html,
+body {
+  padding: 0;
+  margin: 0;
+  background: #f7f5ee;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.tien-noi-bat {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.scroll-ngang {
+  overflow-x: auto;
+}
+
+/* ---- Mobile bottom navigation: dạng nổi, bo tròn, cách đáy màn hình ---- */
+:root {
+  --bottom-nav-height: 64px;
+  --bottom-nav-margin: 16px;
+  --fab-gap: 14px;
+  --fab-size: 56px;
+}
+
+.bottom-nav {
+  position: fixed;
+  left: var(--bottom-nav-margin);
+  right: var(--bottom-nav-margin);
+  bottom: calc(var(--bottom-nav-margin) + env(safe-area-inset-bottom, 0px));
+  z-index: 1000;
+  height: var(--bottom-nav-height);
+  background: #ffffff;
+  border-radius: 22px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 4px;
+  box-shadow:
+    0 12px 28px rgba(18, 92, 49, 0.16),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 10.5px;
+  color: #8a8672;
+  min-width: 54px;
+  height: 52px;
+  border-radius: 16px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.bottom-nav-item.active {
+  color: #1b7a43;
+  font-weight: 600;
+  background: #e8f5ec;
+}
+
+.bottom-nav-item .anticon {
+  font-size: 19px;
+}
+
+.fab-tao-chuyen {
+  position: fixed;
+  right: 24px;
+  /* Luôn nổi cách thanh điều hướng (đã nổi sẵn) một khoảng cố định, kể cả trên máy có tai thỏ/safe-area */
+  bottom: calc(
+    var(--bottom-nav-margin) + var(--bottom-nav-height) + var(--fab-gap) + env(safe-area-inset-bottom, 0px)
+  );
+  z-index: 1001;
+  width: var(--fab-size);
+  height: var(--fab-size);
+  border-radius: 50%;
+  background: #1b7a43;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  box-shadow: 0 6px 16px rgba(27, 122, 67, 0.4);
+  border: none;
+  cursor: pointer;
+}
+
+/* Đệm cuối trang đủ lớn để nội dung không bị thanh điều hướng nổi + nút nổi che mất
+   khi kéo xuống hết trang (khoảng cách đáy + chiều cao thanh nav + khoảng cách + nút nổi + khoảng thở) */
+.page-content-mobile-pad {
+  padding-bottom: calc(
+    var(--bottom-nav-margin) + var(--bottom-nav-height) + var(--fab-gap) + var(--fab-size) + 20px +
+      env(safe-area-inset-bottom, 0px)
+  );
+}
+
+.card-thong-ke {
+  border-radius: 14px;
+  border: 1px solid #e7e3d6;
+}
+
+/* ---- Mobile "Tổng quan" (dashboard) ---- */
+.mobile-hero-card {
+  border-radius: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, #125c31, #1b7a43 65%, #2b9457);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(18, 92, 49, 0.28);
+}
+
+.mobile-hero-label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.mobile-hero-value {
+  font-size: 30px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin: 2px 0 14px;
+  line-height: 1.15;
+}
+
+.mobile-hero-bar-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+  overflow: hidden;
+}
+
+.mobile-hero-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #fff;
+  transition: width 0.3s ease;
+}
+
+.mobile-hero-caption {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.mobile-stat-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  margin: 14px -2px 0;
+  scroll-snap-type: x proximity;
+}
+
+.mobile-stat-chip {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  min-width: 122px;
+  background: #fff;
+  border: 1px solid #e7e3d6;
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+.mobile-stat-chip-label {
+  font-size: 11.5px;
+  color: #8a8672;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.mobile-stat-chip-value {
+  font-size: 15px;
+  font-weight: 700;
+  margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.mobile-list-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 2px;
+  border-bottom: 1px solid #f0eee4;
+}
+
+.mobile-list-row:last-child {
+  border-bottom: none;
+}
+
+.mobile-list-row:active {
+  background: #f7f5ee;
+}
+
+.mobile-list-row-icon {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #e8f5ec;
+  color: #1b7a43;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+}
+
+.mobile-list-row-avatar {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #fdeeec;
+  color: #c0392b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.mobile-list-row-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mobile-list-row-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-list-row-sub {
+  font-size: 12px;
+  color: #8a8672;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-list-row-end {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #b9b6a6;
+}
+
+/* ---- Mobile "Chuyến xe" (danh sách chuyến) ---- */
+.mobile-chuyen-searchbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  padding: 2px 0 10px;
+  background: #f7f5ee;
+}
+
+.mobile-chuyen-filter-btn {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #e7e3d6;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #1b7a43;
+  position: relative;
+}
+
+.mobile-chuyen-filter-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #c0392b;
+}
+
+.mobile-chuyen-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mobile-trip-card {
+  background: #fff;
+  border: 1px solid #e7e3d6;
+  border-left: 4px solid #e7e3d6;
+  border-radius: 16px;
+  padding: 14px;
+  transition: background-color 0.15s ease;
+}
+
+.mobile-trip-card:active {
+  background: #f7f5ee;
+}
+
+/* Màu thẻ thay đổi theo trạng thái thu tiền của chuyến - giúp liếc nhanh
+   chuyến nào đã xong, chuyến nào còn phải nhắc khách trả tiền. */
+.mobile-trip-card.card-da-thu-du {
+  background: #f4faf6;
+  border-color: #cdeada;
+  border-left-color: #1b7a43;
+}
+
+.mobile-trip-card.card-da-thu-du:active {
+  background: #e8f5ec;
+}
+
+.mobile-trip-card.card-mot-phan {
+  background: #fefaf1;
+  border-color: #f0dba2;
+  border-left-color: #c58a00;
+}
+
+.mobile-trip-card.card-mot-phan:active {
+  background: #fdf3dc;
+}
+
+.mobile-trip-card.card-chua-thu {
+  background: #fef6f5;
+  border-color: #f5c6c0;
+  border-left-color: #c0392b;
+}
+
+.mobile-trip-card.card-chua-thu:active {
+  background: #fdeeec;
+}
+
+.mobile-trip-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mobile-trip-card-plate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 15px;
+  color: #1a1a1a;
+  min-width: 0;
+}
+
+.mobile-trip-card-plate .anticon {
+  color: #1b7a43;
+  font-size: 15px;
+}
+
+.mobile-trip-card-date {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: #8a8672;
+}
+
+.mobile-trip-card-sub {
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: #8a8672;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-trip-card-divider {
+  height: 1px;
+  background: #f0eee4;
+  margin: 10px 0;
+}
+
+.mobile-trip-card-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 8px;
+  column-gap: 8px;
+}
+
+.mobile-trip-card-metric-label {
+  font-size: 11px;
+  color: #8a8672;
+}
+
+.mobile-trip-card-metric-value {
+  font-size: 13.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin-top: 1px;
+}
+
+.mobile-trip-card-bottom {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mobile-trip-card-profit {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- "Tổng kết chuyến" (trang chi tiết chuyến) ---- */
+.trip-summary-card {
+  border-radius: 20px;
+  padding: 20px;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(18, 92, 49, 0.22);
+}
+
+.trip-summary-card.loi-nhuan-duong {
+  background: linear-gradient(135deg, #125c31, #1b7a43 65%, #2b9457);
+}
+
+.trip-summary-card.loi-nhuan-am {
+  background: linear-gradient(135deg, #7a231f, #c0392b 65%, #dd5b52);
+  box-shadow: 0 10px 24px rgba(192, 57, 43, 0.24);
+}
+
+.trip-summary-label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.trip-summary-value {
+  font-size: 30px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin: 4px 0 2px;
+  line-height: 1.15;
+}
+
+.trip-summary-note {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.trip-summary-breakdown {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.trip-summary-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.92);
+  gap: 10px;
+}
+
+.trip-summary-row span:first-child {
+  min-width: 0;
+}
+
+.trip-summary-row span:last-child {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.trip-summary-row-total {
+  margin-top: 2px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.trip-summary-extra-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.trip-summary-extra-item {
+  background: #fff;
+  border: 1px solid #e7e3d6;
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+.trip-summary-extra-label {
+  font-size: 11.5px;
+  color: #8a8672;
+}
+
+.trip-summary-extra-value {
+  font-size: 15px;
+  font-weight: 700;
+  margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Mobile "Công nợ phải thu / phải trả" (danh sách) ---- */
+.mobile-congno-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 2px 0 10px;
+  background: #f7f5ee;
+}
+
+.mobile-congno-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #57543f;
+}
+
+.mobile-congno-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mobile-debt-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #e7e3d6;
+  border-radius: 16px;
+  padding: 12px 14px;
+}
+
+.mobile-debt-card:active {
+  background: #f7f5ee;
+}
+
+.mobile-debt-avatar {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #e8f5ec;
+  color: #1b7a43;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.mobile-debt-avatar.tra {
+  background: #fdf3e3;
+  color: #c58a00;
+}
+
+.mobile-debt-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mobile-debt-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mobile-debt-name {
+  font-weight: 700;
+  font-size: 14.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-debt-sub {
+  font-size: 12px;
+  color: #8a8672;
+  margin-top: 2px;
+}
+
+.mobile-debt-amounts {
+  margin-top: 6px;
+  display: flex;
+  gap: 16px;
+}
+
+.mobile-debt-amount-label {
+  font-size: 11px;
+  color: #8a8672;
+}
+
+.mobile-debt-amount-value {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin-top: 1px;
+}
+
+/* ---- "Hàng trên xe" dạng thẻ gọn (trang chi tiết chuyến, điện thoại) ---- */
+.mobile-hang-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mobile-hang-card {
+  background: #fff;
+  border: 1px solid #e7e3d6;
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.mobile-hang-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mobile-hang-card-khach {
+  font-weight: 700;
+  font-size: 14.5px;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.mobile-hang-card-sub {
+  margin-top: 3px;
+  font-size: 12px;
+  color: #8a8672;
+  line-height: 1.5;
+}
+
+.mobile-hang-card-ghichu {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #8a8672;
+}
+
+.mobile-hang-card-divider {
+  height: 1px;
+  background: #f0eee4;
+  margin: 10px 0;
+}
+
+.mobile-hang-card-amounts {
+  display: flex;
+  gap: 18px;
+}
+
+.mobile-hang-card-amount-label {
+  font-size: 11px;
+  color: #8a8672;
+}
+
+.mobile-hang-card-amount-value {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin-top: 1px;
+}
+
+.mobile-hang-card-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.mobile-hang-card-lichsu {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #e7e3d6;
+}
+
+/* ---- Chi tiết công nợ từng khách (điện thoại): đầu trang + "Các chuyến liên quan" dạng thẻ ---- */
+.mobile-khach-header {
+  background: #fff;
+  border: 1px solid #e7e3d6;
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.mobile-khach-header-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobile-khach-header-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mobile-khach-header-name {
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.mobile-khach-header-phone {
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: #8a8672;
+}
+
+.mobile-khach-header-tong {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0eee4;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 8px;
+}
+
+.mobile-khach-section-title {
+  font-weight: 700;
+  font-size: 14.5px;
+  margin: 0 2px 10px;
+}
+
+.mobile-khach-chuyen-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Thẻ chuyến có nút bấm bên trong nên không đổi màu khi nhấn cả thẻ */
+.mobile-khach-chuyen-card.card-da-thu-du:active {
+  background: #f4faf6;
+}
+
+.mobile-khach-chuyen-card.card-mot-phan:active {
+  background: #fefaf1;
+}
+
+.mobile-khach-chuyen-card.card-chua-thu:active {
+  background: #fef6f5;
+}
+
+.mobile-khach-chuyen-bienso {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-khach-chuyen-meta {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+  font-size: 12.5px;
+  color: #57543f;
+}
+
+.mobile-khach-chuyen-chieu {
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #eef0e6;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.mobile-khach-chuyen-hang {
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: #8a8672;
+}
+
+.mobile-khach-chuyen-hang strong {
+  color: #3a3626;
+  font-weight: 600;
+}
+
+.mobile-khach-chuyen-ghichu {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #8a8672;
+  word-break: break-word;
+}
+
+.mobile-khach-chuyen-amounts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 8px;
+}
+
+.mobile-khach-chuyen-actions {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mobile-khach-chuyen-actions > a {
+  display: block;
+}
+
+/* Nút đủ cao để chạm bằng ngón tay */
+.mobile-khach-chuyen-actions .ant-btn {
+  min-height: 40px;
+  border-radius: 10px;
+}
+
+.mobile-khach-chuyen-lichsu-btn.ant-btn {
+  margin-top: 6px;
+  min-height: 36px;
+  color: #57543f;
+  font-size: 13px;
+}
+
+/* ---- Đối chiếu sao kê ngân hàng ---- */
+.doi-chieu-trang {
+  max-width: 760px;
+}
+
+.doi-chieu-header {
+  background: #fff;
+  border: 1px solid #e7e3d6;
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.doi-chieu-header-ten {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.doi-chieu-header-sub {
+  margin-top: 2px;
+  font-size: 13px;
+  color: #8a8672;
+  word-break: break-word;
+}
+
+.doi-chieu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.doi-chieu-card {
+  background: #fff;
+  border: 1px solid #e7e3d6;
+  border-left: 4px solid #c58a00;
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.doi-chieu-card.qua-han {
+  border-left-color: #c0392b;
+  background: #fef6f5;
+}
+
+.doi-chieu-card.da-khop {
+  border-left-color: #1b7a43;
+  background: #f4faf6;
+}
+
+.doi-chieu-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.doi-chieu-card-ten {
+  font-weight: 700;
+  font-size: 14.5px;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.doi-chieu-card-huong {
+  font-weight: 500;
+  color: #8a8672;
+}
+
+.doi-chieu-card-sub {
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: #8a8672;
+}
+
+.doi-chieu-card-bottom {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #f0eee4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.doi-chieu-card-bottom .ant-checkbox-wrapper {
+  min-height: 32px;
+  align-items: center;
+}
+
+/* ---- Tổng quan (điện thoại): bộ lọc thời gian là 1 dòng chữ trên thẻ ---- */
+.mobile-hero-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  min-height: 32px;
+  margin: -4px 0 10px -6px;
+  padding: 4px 12px 4px 10px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mobile-hero-filter:active {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.mobile-hero-filter span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Bảng chọn thời gian trượt từ dưới lên */
+.chon-thoi-gian-hang {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 20px;
+  border: none;
+  border-bottom: 1px solid #f0eee4;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chon-thoi-gian-hang:last-child {
+  border-bottom: none;
+}
+
+.chon-thoi-gian-hang:active {
+  background: #f7f5ee;
+}
+
+.chon-thoi-gian-hang.dang-chon {
+  background: #f4faf6;
+}
+
+.chon-thoi-gian-hang-noi-dung {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.chon-thoi-gian-hang-nhan {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.chon-thoi-gian-hang.dang-chon .chon-thoi-gian-hang-nhan {
+  color: #1b7a43;
+}
+
+.chon-thoi-gian-hang-sub {
+  font-size: 12.5px;
+  color: #8a8672;
+}
+
+.chon-thoi-gian-hang .anticon.chon-thoi-gian-hang-tick {
+  color: #1b7a43;
+  font-size: 16px;
+}
+
+/* ---- Mobile "Danh mục" (Xe, Tài xế, Khách hàng, Hàng hóa, Người bốc hàng) ---- */
+.mobile-crud-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mobile-crud-card {
+  background: #fff;
+  border: 1px solid #e7e3d6;
+  border-radius: 16px;
+  padding: 12px 14px;
+}
+
+.mobile-crud-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mobile-crud-card-title {
+  font-weight: 700;
+  font-size: 15px;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.mobile-crud-card-actions {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 6px;
+}
+
+.mobile-crud-card-row {
+  margin-top: 6px;
+  font-size: 13px;
+  display: flex;
+  gap: 6px;
+}
+
+.mobile-crud-card-label {
+  color: #8a8672;
+  flex: 0 0 auto;
+}
+
+.mobile-crud-card-value {
+  color: #333;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.mobile-crud-card-usage {
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: #8a8672;
+  border-top: 1px solid #f0eee4;
+  padding-top: 6px;
+}
+
+.the-trang-thai-chua-thu {
+  color: #c0392b;
+  background: #fdeeec;
+  border: 1px solid #f5c6c0;
+}
+
+.the-trang-thai-mot-phan {
+  color: #c58a00;
+  background: #fdf3dc;
+  border: 1px solid #f0dba2;
+}
+
+.the-trang-thai-da-thu-du {
+  color: #1b7a43;
+  background: #e8f5ec;
+  border: 1px solid #b8dfc4;
+}
+
+/* ---- Chọn ngày trên điện thoại: gọn, đẹp và dễ bấm hơn ---- */
+@media (max-width: 767px) {
+  /* Ô nhập ngày to hơn, dễ chạm, bo tròn mềm mại hơn (dùng cho DatePicker đơn trong form) */
+  .ant-picker {
+    min-height: 44px;
+    font-size: 14.5px;
+    border-radius: 12px;
+  }
+}
+
+/* ---- Nút mở "Chọn khoảng ngày" trên điện thoại ---- */
+.nut-mo-lich-khoang-ngay {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid #e3e0d2;
+  background: #ffffff;
+  color: #3a3626;
+  font-size: 14.5px;
+  text-align: left;
+}
+
+.nut-mo-lich-khoang-ngay .anticon {
+  color: #1b7a43;
+  font-size: 16px;
+}
+
+/* ---- Lịch chọn khoảng ngày: 1 lịch duy nhất, chạm 2 lần (từ ngày / đến ngày) ---- */
+.lich-khoang-ngay-lop-phu {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 18, 10, 0.38);
+  z-index: 1200;
+  display: flex;
+  align-items: flex-end;
+}
+
+.lich-khoang-ngay-sheet {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.16);
+  padding: 8px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  max-height: 88vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+.lich-khoang-ngay-tay-cam {
+  width: 36px;
+  height: 4px;
+  border-radius: 999px;
+  background: #e0ddd0;
+  margin: 6px auto 10px;
+}
+
+.lich-khoang-ngay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.lich-khoang-ngay-tieu-de {
+  font-size: 16px;
+  font-weight: 700;
+  color: #22261f;
+}
+
+.lich-khoang-ngay-nut-dong {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f5f3ea;
+  color: #6b6754;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+}
+
+.lich-khoang-ngay-tom-tat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.lich-khoang-ngay-tom-tat-o {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #f7f5ee;
+  border: 1.5px solid transparent;
+}
+
+.lich-khoang-ngay-tom-tat-o.dang-cho {
+  border-color: #1b7a43;
+  background: #e8f5ec;
+}
+
+.lich-khoang-ngay-tom-tat-nhan {
+  font-size: 11.5px;
+  color: #8a8672;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.lich-khoang-ngay-tom-tat-gia-tri {
+  font-size: 14px;
+  font-weight: 600;
+  color: #22261f;
+}
+
+.lich-khoang-ngay-tom-tat-mui-ten {
+  color: #b8b49f;
+  font-size: 14px;
+}
+
+.lich-khoang-ngay-dieu-huong-thang {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.lich-khoang-ngay-nut-thang {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #f5f3ea;
+  border: none;
+  color: #3a3626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lich-khoang-ngay-ten-thang {
+  font-size: 15px;
+  font-weight: 700;
+  color: #22261f;
+}
+
+.lich-khoang-ngay-thu {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+
+.lich-khoang-ngay-thu-o {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8a8672;
+  padding: 4px 0;
+}
+
+.lich-khoang-ngay-luoi {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  row-gap: 2px;
+}
+
+.lich-khoang-ngay-o {
+  position: relative;
+  height: 40px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: #3a3626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lich-khoang-ngay-o span {
+  position: relative;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.lich-khoang-ngay-o.khac-thang {
+  color: #cfccbb;
+}
+
+.lich-khoang-ngay-o.hom-nay span {
+  border: 1.5px solid #1b7a43;
+}
+
+.lich-khoang-ngay-o.trong-khoang {
+  background: #e8f5ec;
+}
+
+.lich-khoang-ngay-o.trong-khoang:first-child {
+  border-radius: 50% 0 0 50%;
+}
+
+.lich-khoang-ngay-o.diem-dau,
+.lich-khoang-ngay-o.diem-cuoi {
+  background: #e8f5ec;
+}
+
+.lich-khoang-ngay-o.diem-dau {
+  border-radius: 50% 0 0 50%;
+}
+
+.lich-khoang-ngay-o.diem-cuoi {
+  border-radius: 0 50% 50% 0;
+}
+
+.lich-khoang-ngay-o.diem-dau.diem-cuoi {
+  border-radius: 50%;
+}
+
+.lich-khoang-ngay-o.diem-dau span,
+.lich-khoang-ngay-o.diem-cuoi span {
+  background: #1b7a43;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.lich-khoang-ngay-footer {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.lich-khoang-ngay-nut-xoa {
+  flex: 1;
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid #e3e0d2;
+  background: #ffffff;
+  color: #6b6754;
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.lich-khoang-ngay-nut-ap-dung {
+  flex: 2;
+  min-height: 44px;
+  border-radius: 12px;
+  border: none;
+  background: #1b7a43;
+  color: #ffffff;
+  font-size: 14.5px;
+  font-weight: 700;
+}
+
+.lich-khoang-ngay-nut-ap-dung:disabled {
+  background: #cfccbb;
+}
+
+/* ---- Mobile "Báo cáo" - danh sách thẻ "Theo xe" thay cho bảng cuộn ngang ---- */
+.mobile-baocao-xe-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mobile-baocao-xe-item {
+  border: 1px solid #e7e3d6;
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: #fff;
+}
+
+.mobile-baocao-xe-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mobile-baocao-xe-plate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 14.5px;
+  color: #1a1a1a;
+  min-width: 0;
+}
+
+.mobile-baocao-xe-plate .anticon {
+  color: #1b7a43;
+  font-size: 14px;
+}
+
+.mobile-baocao-xe-badge {
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #1b7a43;
+  background: #e8f5ec;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.mobile-baocao-xe-sub {
+  margin-top: 3px;
+  font-size: 12px;
+  color: #8a8672;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-baocao-xe-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 8px;
+  column-gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #f0eee4;
+}
+
+.mobile-baocao-metric-label {
+  font-size: 10.5px;
+  color: #8a8672;
+}
+
+.mobile-baocao-metric-value {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin-top: 1px;
+}
+
+@media (max-width: 767px) {
+  .an-tren-mobile {
+    display: none !important;
+  }
+}
+
+/* ---- Thẻ chuyến trên giao diện web: cùng màu trạng thái + cùng bố cục với
+   thẻ trên điện thoại (mobile-trip-card), và luôn cao bằng nhau trong 1 hàng ---- */
+.ant-list-items {
+  align-items: stretch;
+}
+
+.ant-list-grid .ant-list-item {
+  height: 100%;
+  margin-bottom: 0 !important;
+}
+
+.desktop-trip-card-link {
+  display: block;
+  height: 100%;
+}
+
+.desktop-trip-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e7e3d6;
+  border-left: 4px solid #e7e3d6;
+  border-radius: 16px;
+  padding: 16px;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.desktop-trip-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.desktop-trip-card.card-da-thu-du {
+  background: #f4faf6;
+  border-color: #cdeada;
+  border-left-color: #1b7a43;
+}
+
+.desktop-trip-card.card-mot-phan {
+  background: #fefaf1;
+  border-color: #f0dba2;
+  border-left-color: #c58a00;
+}
+
+.desktop-trip-card.card-chua-thu {
+  background: #fef6f5;
+  border-color: #f5c6c0;
+  border-left-color: #c0392b;
+}
+
+.desktop-trip-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.desktop-trip-card-plate {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 16px;
+  color: #1a1a1a;
+  min-width: 0;
+}
+
+.desktop-trip-card-plate .anticon {
+  color: #1b7a43;
+  font-size: 16px;
+}
+
+.desktop-trip-card-date {
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  color: #8a8672;
+}
+
+.desktop-trip-card-sub {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #8a8672;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.desktop-trip-card-divider {
+  height: 1px;
+  background: #f0eee4;
+  margin: 12px 0;
+}
+
+.desktop-trip-card-metrics {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 12px;
+  column-gap: 8px;
+  align-content: start;
+}
+
+.desktop-trip-card-metric-label {
+  font-size: 12px;
+  color: #8a8672;
+  margin-bottom: 2px;
+}
+
+.desktop-trip-card-bottom {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #f0eee4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.desktop-trip-card-profit {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Thẻ công nợ (phải thu / phải trả) trên giao diện web: cùng ngôn ngữ
+   thị giác với thẻ chuyến (viền màu theo trạng thái) và luôn cao bằng nhau ---- */
+.desktop-debt-card-link {
+  display: block;
+  height: 100%;
+}
+
+.desktop-debt-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e7e3d6;
+  border-left: 4px solid #e7e3d6;
+  border-radius: 16px;
+  padding: 16px;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.desktop-debt-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.desktop-debt-card.card-da-thu-du {
+  background: #f4faf6;
+  border-color: #cdeada;
+  border-left-color: #1b7a43;
+}
+
+.desktop-debt-card.card-mot-phan {
+  background: #fefaf1;
+  border-color: #f0dba2;
+  border-left-color: #c58a00;
+}
+
+.desktop-debt-card.card-chua-thu {
+  background: #fef6f5;
+  border-color: #f5c6c0;
+  border-left-color: #c0392b;
+}
+
+.desktop-debt-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.desktop-debt-avatar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.desktop-debt-name-block {
+  min-width: 0;
+}
+
+.desktop-debt-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: #1a1a1a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.desktop-debt-sub {
+  font-size: 12.5px;
+  color: #8a8672;
+  margin-top: 1px;
+}
+
+.desktop-debt-divider {
+  height: 1px;
+  background: #f0eee4;
+  margin: 14px 0;
+}
+
+.desktop-debt-metrics {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 8px;
+  align-content: start;
+}
+
+.desktop-debt-metric-label {
+  font-size: 12px;
+  color: #8a8672;
+  margin-bottom: 3px;
+}
+
+@media (min-width: 768px) {
+  .an_tren_desktop,
+  .chi-hien-mobile {
+    display: none !important;
+  }
+}
+
+.hang-hien-tai td {
+  background: #fff7db !important;
+  font-weight: 600;
+}
