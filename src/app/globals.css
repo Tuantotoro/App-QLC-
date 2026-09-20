@@ -119,6 +119,26 @@ a {
   box-shadow: 0 10px 24px rgba(18, 92, 49, 0.28);
 }
 
+.mobile-hero-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.mobile-hero-title {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.mobile-hero-subtitle {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 2px;
+}
+
 .mobile-hero-label {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.82);
@@ -155,18 +175,13 @@ a {
 }
 
 .mobile-stat-scroll {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 2px;
-  margin: 14px -2px 0;
-  scroll-snap-type: x proximity;
+  margin: 14px 0 0;
 }
 
 .mobile-stat-chip {
-  flex: 0 0 auto;
-  scroll-snap-align: start;
-  min-width: 122px;
   background: #fff;
   border: 1px solid #e7e3d6;
   border-radius: 14px;
@@ -943,10 +958,11 @@ a {
 .mobile-hero-filter {
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
   gap: 6px;
-  max-width: 100%;
+  max-width: 58%;
   min-height: 32px;
-  margin: -4px 0 10px -6px;
+  margin-top: -2px;
   padding: 4px 12px 4px 10px;
   border: none;
   border-radius: 999px;
