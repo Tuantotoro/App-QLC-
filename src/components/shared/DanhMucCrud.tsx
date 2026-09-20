@@ -18,6 +18,7 @@ import {
 } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from "@ant-design/icons";
 import type { ColumnsType, ColumnType } from "antd/es/table";
+import MobileTheDauTrang, { type CauHinhTheDau } from "@/components/shared/MobileTheDauTrang";
 
 const { useBreakpoint } = Grid;
 
@@ -45,6 +46,8 @@ interface Props<T extends { id: string }> {
   /** Giá trị điền sẵn khi mở form "Thêm mới" (VD: bật sẵn công tắc "Đang sử dụng"). */
   giaTriMacDinh?: GiaTriForm;
   nhanThem?: string;
+  /** Thẻ đầu trang trên điện thoại (kiểu "Tổng quan"). Không truyền thì dùng tiêu đề + ô tìm kiếm cũ. */
+  theDauMobile?: CauHinhTheDau;
 }
 
 export default function DanhMucCrud<T extends { id: string }>({
@@ -60,6 +63,7 @@ export default function DanhMucCrud<T extends { id: string }>({
   chanXoa,
   giaTriMacDinh,
   nhanThem = "Thêm mới",
+  theDauMobile,
 }: Props<T>) {
   const [modalMo, setModalMo] = useState(false);
   const [dangSuaId, setDangSuaId] = useState<string | null>(null);
@@ -177,33 +181,52 @@ export default function DanhMucCrud<T extends { id: string }>({
 
   return (
     <div>
-      <Space
-        style={{ width: "100%", justifyContent: "space-between", marginBottom: 16 }}
-        align="start"
-      >
-        <div>
-          <Typography.Title level={4} style={{ margin: 0 }}>
-            {tieuDe}
-          </Typography.Title>
-          {moTa && <Typography.Text type="secondary">{moTa}</Typography.Text>}
-        </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={moModalThem}>
-          {nhanThem}
-        </Button>
-      </Space>
+      {(isDesktop || !theDauMobile) && (
+        <Space
+          style={{ width: "100%", justifyContent: "space-between", marginBottom: 16 }}
+          align="start"
+        >
+          <div>
+            <Typography.Title level={4} style={{ margin: 0 }}>
+              {tieuDe}
+            </Typography.Title>
+            {moTa && <Typography.Text type="secondary">{moTa}</Typography.Text>}
+          </div>
+          <Button type="primary" icon={<PlusOutlined />} onClick={moModalThem}>
+            {nhanThem}
+          </Button>
+        </Space>
+      )}
 
       {!isDesktop ? (
         <>
-          <div className="mobile-chuyen-searchbar">
-            <Input
-              placeholder={`Tìm ${tieuDe.toLowerCase()}...`}
-              prefix={<SearchOutlined style={{ color: "#8a8672" }} />}
-              value={tuKhoa}
-              onChange={(e) => setTuKhoa(e.target.value)}
-              allowClear
-              style={{ flex: 1, borderRadius: 10 }}
-            />
-          </div>
+          {theDauMobile ? (
+            <MobileTheDauTrang
+              tieuDe={tieuDe}
+              hanhDong={{ nhan: "Thêm", onClick: moModalThem }}
+              {...theDauMobile}
+            >
+              <Input
+                placeholder={`Tìm ${tieuDe.toLowerCase()}...`}
+                prefix={<SearchOutlined style={{ color: "#8a8672" }} />}
+                value={tuKhoa}
+                onChange={(e) => setTuKhoa(e.target.value)}
+                allowClear
+                style={{ borderRadius: 12, height: 40 }}
+              />
+            </MobileTheDauTrang>
+          ) : (
+            <div className="mobile-chuyen-searchbar">
+              <Input
+                placeholder={`Tìm ${tieuDe.toLowerCase()}...`}
+                prefix={<SearchOutlined style={{ color: "#8a8672" }} />}
+                value={tuKhoa}
+                onChange={(e) => setTuKhoa(e.target.value)}
+                allowClear
+                style={{ flex: 1, borderRadius: 10 }}
+              />
+            </div>
+          )}
 
           {duLieuDaLoc.length === 0 ? (
             <Empty description="Không tìm thấy mục nào" style={{ margin: "32px 0" }} />
