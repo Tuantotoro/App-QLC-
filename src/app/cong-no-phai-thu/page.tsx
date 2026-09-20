@@ -6,6 +6,8 @@ import { SearchOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { useData, useLookup } from "@/store/DataContext";
 import { tongHopCongNoKhachHang } from "@/utils/aggregate";
+import { formatTien } from "@/utils/calc";
+import type { CauHinhTheDau } from "@/components/shared/MobileTheDauTrang";
 import SoTien from "@/components/shared/SoTien";
 import TrangThaiTag from "@/components/shared/TrangThaiTag";
 import MobileDanhSachCongNo from "@/components/shared/MobileDanhSachCongNo";
@@ -20,15 +22,51 @@ export default function CongNoPhaiThuPage() {
   const screens = useBreakpoint();
   const isDesktop = screens.md;
 
+  const tatCa = useMemo(() => tongHopCongNoKhachHang(data), [data]);
+
   const danhSach = useMemo(() => {
-    let ds = tongHopCongNoKhachHang(data);
+    let ds = tatCa;
     if (chiHienConNo) ds = ds.filter((d) => d.tongConNo > 0);
     if (tuKhoa.trim()) {
       const tk = tuKhoa.toLowerCase();
       ds = ds.filter((d) => (khachHangMap.get(d.khachHangId)?.hoTen ?? "").toLowerCase().includes(tk));
     }
-    return ds.sort((a, b) => b.tongConNo - a.tongConNo);
-  }, [data, chiHienConNo, tuKhoa, khachHangMap]);
+    return [...ds].sort((a, b) => b.tongConNo - a.tongConNo);
+  }, [tatCa, chiHienConNo, tuKhoa, khachHangMap]);
+
+  // Thẻ đầu trang (điện thoại): còn phải thu + tiến độ thu -> chia theo tình trạng thu -> khách nợ nhiều nhất.
+  // Tính trên toàn bộ công nợ, không đổi theo ô tìm kiếm hay nút "Còn nợ".
+  const theDau = useMemo<CauHinhTheDau>(() => {
+    const tongPhaiThu = tatCa.reduce((s, d) => s + d.tongPhaiThu, 0);
+    const tongDaThu = tatCa.reduce((s, d) => s + d.tongDaThu, 0);
+    const tongConNo = tatCa.reduce((s, d) => s + d.tongConNo, 0);
+    const dem = (tt: "chua_thu" | "mot_phan" | "da_thu_du") => tatCa.filter((d) => d.trangThai === tt).length;
+    const noNhieuNhat = tatCa.reduce<(typeof tatCa)[number] | null>(
+      (max, d) => (d.tongConNo > 0 && (!max || d.tongConNo > max.tongConNo) ? d : max),
+      null
+    );
+    return {
+      phuDe: `${tatCa.length} khách hàng có công nợ`,
+      nhanChinh: "Còn phải thu",
+      giaTriChinh: formatTien(tongConNo),
+      tienDo: {
+        phanTram: tongPhaiThu > 0 ? Math.round((tongDaThu / tongPhaiThu) * 100) : 0,
+        trai: `Đã thu ${formatTien(tongDaThu)}`,
+        phai: `Tổng ${formatTien(tongPhaiThu)}`,
+      },
+      chiSo: [
+        { nhan: "Chưa thu", giaTri: dem("chua_thu") },
+        { nhan: "Thu một phần", giaTri: dem("mot_phan") },
+        { nhan: "Đã thu đủ", giaTri: dem("da_thu_du") },
+        {
+          nhan: "Nợ nhiều nhất",
+          giaTri: noNhieuNhat ? formatTien(noNhieuNhat.tongConNo) : "—",
+          phu: noNhieuNhat ? khachHangMap.get(noNhieuNhat.khachHangId)?.hoTen ?? "—" : undefined,
+          tone: noNhieuNhat ? "nguy-hiem" : undefined,
+        },
+      ],
+    };
+  }, [tatCa, khachHangMap]);
 
   const mucDanhSach = useMemo(
     () =>
@@ -45,14 +83,20 @@ export default function CongNoPhaiThuPage() {
 
   return (
     <div>
-      <Typography.Title level={4} style={{ marginTop: 0 }}>
-        Công nợ phải thu
-      </Typography.Title>
-      <Typography.Text type="secondary">Danh sách công nợ theo từng khách hàng</Typography.Text>
+      {isDesktop && (
+        <>
+          <Typography.Title level={4} style={{ marginTop: 0 }}>
+            Công nợ phải thu
+          </Typography.Title>
+          <Typography.Text type="secondary">Danh sách công nợ theo từng khách hàng</Typography.Text>
+        </>
+      )}
 
       {!isDesktop ? (
-        <div style={{ marginTop: 12 }}>
+        <div>
           <MobileDanhSachCongNo
+            tieuDe="Công nợ phải thu"
+            theDau={theDau}
             danhSach={mucDanhSach}
             kieu="thu"
             hrefPrefix="/cong-no-phai-thu/chi-tiet?id="
