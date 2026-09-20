@@ -115,7 +115,7 @@ export default function DashboardPage() {
 
   return (
     <div>
-      {isDesktop ? (
+      {isDesktop && (
         <Row justify="space-between" align="middle" style={{ marginBottom: 16 }} gutter={[12, 12]}>
           <Col>
             <Typography.Title level={4} style={{ margin: 0 }}>
@@ -133,12 +133,8 @@ export default function DashboardPage() {
             />
           </Col>
         </Row>
-      ) : (
-        // Điện thoại: bộ lọc thời gian nằm ngay trên thẻ tổng quan (xem MobileTongQuan)
-        <Typography.Title level={4} style={{ marginTop: 0, marginBottom: 12 }}>
-          Tổng quan
-        </Typography.Title>
       )}
+      {/* Điện thoại: tiêu đề "Tổng quan" và bộ lọc thời gian nằm chung 1 hàng ngay trong thẻ (xem MobileTongQuan) */}
 
       {isDesktop ? (
         <>
