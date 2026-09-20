@@ -1,14 +1,38 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { Tag } from "antd";
 import { useData } from "@/store/DataContext";
 import DanhMucCrud, { GiaTriForm } from "@/components/shared/DanhMucCrud";
 import { layCacChieuCuaChuyen } from "@/utils/calc";
+import type { CauHinhTheDau } from "@/components/shared/MobileTheDauTrang";
 import type { TaiXe } from "@/types";
 
 export default function TaiXePage() {
   const { data, themTaiXe, capNhatTaiXe, xoaTaiXe } = useData();
+
+  // Thẻ đầu trang (điện thoại): số tài xế -> đang hoạt động/ngừng -> đã chạy chuyến/chưa chạy
+  const theDauMobile = useMemo<CauHinhTheDau>(() => {
+    const idDaChay = new Set<string>();
+    data.chuyenList.forEach((c) =>
+      layCacChieuCuaChuyen(c).forEach((ch) => idDaChay.add(ch.duLieu.taiXeId))
+    );
+    const tong = data.taiXeList.length;
+    const dangHoatDong = data.taiXeList.filter((t) => t.dangHoatDong).length;
+    const daChay = data.taiXeList.filter((t) => idDaChay.has(t.id)).length;
+    return {
+      phuDe: "Tài xế phụ trách các chuyến xe",
+      nhanChinh: "Tổng số tài xế",
+      giaTriChinh: tong,
+      donVi: "tài xế",
+      chiSo: [
+        { nhan: "Đang hoạt động", giaTri: dangHoatDong },
+        { nhan: "Ngừng hoạt động", giaTri: tong - dangHoatDong },
+        { nhan: "Đã chạy chuyến", giaTri: daChay },
+        { nhan: "Chưa chạy chuyến", giaTri: tong - daChay },
+      ],
+    };
+  }, [data]);
 
   function demSuDung(id: string) {
     return data.chuyenList.filter((c) =>
@@ -48,6 +72,7 @@ export default function TaiXePage() {
       onSua={(id, v) => capNhatTaiXe(id, v as Partial<TaiXe>)}
       onXoa={xoaTaiXe}
       demSuDung={demSuDung}
+      theDauMobile={theDauMobile}
     />
   );
 }
