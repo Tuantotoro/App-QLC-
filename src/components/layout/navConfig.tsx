@@ -38,7 +38,7 @@ export const NAV_DANH_MUC: NavItem[] = [
 
 export const NAV_KHAC: NavItem[] = [
   { key: "bao-cao", href: "/bao-cao", label: "Báo cáo", icon: <FileTextOutlined /> },
-  { key: "cai-dat", href: "/cai-dat", label: "Cài đặt dữ liệu mẫu", icon: <ToolOutlined /> },
+  { key: "cai-dat", href: "/cai-dat", label: "Cài đặt", icon: <ToolOutlined /> },
 ];
 
 export const NAV_BOTTOM_MOBILE: NavItem[] = [
