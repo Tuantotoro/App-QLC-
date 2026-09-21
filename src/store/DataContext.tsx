@@ -4,7 +4,8 @@
 // DATA CONTEXT - Quản lý state toàn cục cho prototype (thay thế database)
 // Lưu vào localStorage để mô phỏng việc dữ liệu được "lưu lại".
 // ==========================================================================
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Button, Modal } from "antd";
 import { v4 as uuidv4 } from "uuid";
 import type {
   AppData,
@@ -23,6 +24,9 @@ import type {
   LanThanhToanNguoiBoc,
 } from "@/types";
 import { taoMockAppData } from "@/mock/data";
+import * as mayChu from "@/lib/mayChu";
+import { chuanHoaDuLieu, taiXuongFileSaoLuu, taoDuLieuTrong } from "@/utils/saoLuu";
+import ManHinhMayChu, { type GiaiDoanMayChu } from "@/components/layout/ManHinhMayChu";
 
 /**
  * Áp dụng một biến đổi lên dòng hàng có id = hangId, dù dòng đó nằm ở chiều
@@ -101,6 +105,12 @@ function suaLanThanhToanTrongChuyen(
 
 const STORAGE_KEY = "xe-app-prototype-data-v1";
 
+/** Có khai báo máy chủ (Supabase) thì dữ liệu lưu trên máy chủ; không thì lưu trong trình duyệt như cũ. */
+const CHE_DO_MAY_CHU = mayChu.DA_CAU_HINH_MAY_CHU;
+
+/** Tình trạng lưu dữ liệu lên máy chủ (chỉ có ý nghĩa ở chế độ máy chủ). */
+export type TrangThaiLuu = "da-luu" | "dang-luu" | "loi" | "xung-dot";
+
 interface DataContextValue {
   data: AppData;
   daTaiXong: boolean;
@@ -150,44 +160,262 @@ interface DataContextValue {
   // Reset
   khoiPhucDuLieuMau: () => void;
   xoaTatCaDuLieu: () => void;
+  // Máy chủ, sao lưu
+  /** true nếu dữ liệu đang lưu trên máy chủ (đã cấu hình Supabase). */
+  cheDoMayChu: boolean;
+  trangThaiLuu: TrangThaiLuu;
+  emailDangNhap: string | null;
+  dangXuat: () => Promise<void>;
+  /** Dữ liệu cũ còn nằm trong trình duyệt của thiết bị này (từ bản chưa có máy chủ), nếu có. */
+  docDuLieuCuTrenThietBi: () => AppData | null;
+  /** Thay toàn bộ dữ liệu hiện tại bằng dữ liệu khác (khôi phục từ file, nạp dữ liệu cũ...). */
+  thayTheToanBoDuLieu: (d: AppData) => void;
 }
 
 const DataContext = createContext<DataContextValue | undefined>(undefined);
 
-function taiTuLocalStorage(): AppData {
-  if (typeof window === "undefined") return taoMockAppData();
+function docLocalStorage(): AppData | null {
+  if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return taoMockAppData();
-    const parsed = JSON.parse(raw) as AppData;
-    if (!parsed.chuyenList) return taoMockAppData();
-    // Dữ liệu lưu từ phiên bản cũ chưa có danh sách tài khoản ngân hàng
-    return { ...parsed, taiKhoanNganHangList: parsed.taiKhoanNganHangList ?? [] };
+    return raw ? chuanHoaDuLieu(JSON.parse(raw)) : null;
   } catch {
-    return taoMockAppData();
+    return null;
   }
+}
+
+function taiTuLocalStorage(): AppData {
+  return docLocalStorage() ?? taoMockAppData();
 }
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState<AppData>(() => taoMockAppData());
   const [daTaiXong, setDaTaiXong] = useState(false);
 
+  // --- Trạng thái riêng của chế độ máy chủ ---
+  const [giaiDoan, setGiaiDoan] = useState<GiaiDoanMayChu>(CHE_DO_MAY_CHU ? "khoi-dong" : "san-sang");
+  const [trangThaiLuu, setTrangThaiLuu] = useState<TrangThaiLuu>("da-luu");
+  const [emailDangNhap, setEmailDangNhap] = useState<string | null>(null);
+  const [loiTai, setLoiTai] = useState("");
+  const dataRef = useRef<AppData>(data);
+  /** Bản dữ liệu đã lưu thành công lên máy chủ gần nhất (null = chưa nạp từ máy chủ). */
+  const daLuuRef = useRef<AppData | null>(null);
+  const phienBanRef = useRef(0);
+  const userIdRef = useRef<string | null>(null);
+  const dangLuuRef = useRef(false);
+  const xungDotRef = useRef(false);
+
   useEffect(() => {
-    // Nạp dữ liệu từ localStorage sau khi hydrate xong ở phía client (localStorage
-    // không khả dụng lúc build static export, nên phải nạp lại ở đây)
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setData(taiTuLocalStorage());
-    setDaTaiXong(true);
+    dataRef.current = data;
+  }, [data]);
+
+  /** Nạp dữ liệu từ máy chủ và vào app (hoặc sang màn hình "chưa có dữ liệu"). */
+  const taiTuMayChu = useCallback(async () => {
+    setGiaiDoan("tai-du-lieu");
+    try {
+      const ban = await mayChu.docDuLieu();
+      const phien = mayChu.docPhien();
+      setEmailDangNhap(phien?.email ?? null);
+      userIdRef.current = phien?.userId ?? null;
+      if (!ban) {
+        setGiaiDoan("chua-co-du-lieu");
+        return;
+      }
+      const d = chuanHoaDuLieu(ban.data);
+      if (!d) {
+        // Không được tự ghi đè: dữ liệu trên máy chủ có thể chỉ bị lỗi định dạng
+        setLoiTai("Dữ liệu trên máy chủ không đọc được. Đừng thao tác thêm và hãy liên hệ người hỗ trợ.");
+        setGiaiDoan("loi-tai");
+        return;
+      }
+      xungDotRef.current = false;
+      phienBanRef.current = ban.version;
+      daLuuRef.current = d;
+      setData(d);
+      setTrangThaiLuu("da-luu");
+      setDaTaiXong(true);
+      setGiaiDoan("san-sang");
+    } catch (e) {
+      if (e instanceof mayChu.LoiXacThuc) {
+        setGiaiDoan("dang-nhap");
+        return;
+      }
+      setLoiTai(e instanceof Error ? e.message : "Không tải được dữ liệu.");
+      setGiaiDoan("loi-tai");
+    }
   }, []);
 
   useEffect(() => {
-    if (!daTaiXong) return;
+    if (!CHE_DO_MAY_CHU) {
+      // Nạp dữ liệu từ localStorage sau khi hydrate xong ở phía client (localStorage
+      // không khả dụng lúc build static export, nên phải nạp lại ở đây)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setData(taiTuLocalStorage());
+      setDaTaiXong(true);
+      return;
+    }
+    if (!mayChu.docPhien()) {
+      setGiaiDoan("dang-nhap");
+      return;
+    }
+    void taiTuMayChu();
+  }, [taiTuMayChu]);
+
+  // Chế độ trình duyệt (chưa cấu hình máy chủ): lưu vào localStorage như bản prototype cũ
+  useEffect(() => {
+    if (CHE_DO_MAY_CHU || !daTaiXong) return;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch {
       // localStorage có thể đầy hoặc không khả dụng - bỏ qua trong prototype
     }
   }, [data, daTaiXong]);
+
+  /** Lưu lên máy chủ cho tới khi không còn thay đổi chưa lưu. */
+  const luuLenMayChu = useCallback(async () => {
+    if (dangLuuRef.current || xungDotRef.current) return;
+    dangLuuRef.current = true;
+    try {
+      while (daLuuRef.current && dataRef.current !== daLuuRef.current) {
+        const banCanLuu = dataRef.current;
+        setTrangThaiLuu("dang-luu");
+        const phienBanMoi = await mayChu.capNhatDuLieu(banCanLuu, phienBanRef.current);
+        if (phienBanMoi === null) {
+          // Thiết bị khác đã lưu trước - không ghi đè, để người dùng chọn
+          xungDotRef.current = true;
+          setTrangThaiLuu("xung-dot");
+          return;
+        }
+        phienBanRef.current = phienBanMoi;
+        daLuuRef.current = banCanLuu;
+      }
+      setTrangThaiLuu("da-luu");
+    } catch (e) {
+      if (e instanceof mayChu.LoiXacThuc) {
+        // Giữ nguyên dữ liệu đang có trong bộ nhớ, đăng nhập lại xong sẽ lưu tiếp
+        setTrangThaiLuu("loi");
+        setGiaiDoan("dang-nhap");
+        return;
+      }
+      // Lỗi tạm thời (mất mạng...): hiện "Lỗi lưu", effect bên dưới sẽ tự thử lại sau ít giây
+      setTrangThaiLuu("loi");
+    } finally {
+      dangLuuRef.current = false;
+    }
+  }, []);
+
+  // Chế độ máy chủ: có thay đổi thì đợi một chút rồi lưu
+  useEffect(() => {
+    if (!CHE_DO_MAY_CHU || giaiDoan !== "san-sang") return;
+    if (!daLuuRef.current || data === daLuuRef.current || xungDotRef.current) return;
+    setTrangThaiLuu("dang-luu");
+    const hen = setTimeout(() => void luuLenMayChu(), 800);
+    return () => clearTimeout(hen);
+  }, [data, giaiDoan, luuLenMayChu]);
+
+  // Lưu bị lỗi thì thử lại sau 5 giây
+  useEffect(() => {
+    if (!CHE_DO_MAY_CHU || giaiDoan !== "san-sang" || trangThaiLuu !== "loi") return;
+    const hen = setTimeout(() => void luuLenMayChu(), 5000);
+    return () => clearTimeout(hen);
+  }, [trangThaiLuu, giaiDoan, luuLenMayChu]);
+
+  // Quay lại tab/app: lưu ngay khi rời đi, và lấy bản mới nếu thiết bị khác đã sửa
+  useEffect(() => {
+    if (!CHE_DO_MAY_CHU || giaiDoan !== "san-sang") return;
+    const khiDoiTab = async () => {
+      if (document.visibilityState === "hidden") {
+        void luuLenMayChu();
+        return;
+      }
+      if (dangLuuRef.current || xungDotRef.current) return;
+      if (!daLuuRef.current || dataRef.current !== daLuuRef.current) return;
+      try {
+        const v = await mayChu.docPhienBanDuLieu();
+        if (v === null || v <= phienBanRef.current) return;
+        const ban = await mayChu.docDuLieu();
+        const d = ban ? chuanHoaDuLieu(ban.data) : null;
+        // Chỉ nạp nếu trong lúc chờ không có thay đổi mới trên máy này
+        if (ban && d && !dangLuuRef.current && dataRef.current === daLuuRef.current) {
+          phienBanRef.current = ban.version;
+          daLuuRef.current = d;
+          setData(d);
+        }
+      } catch {
+        // mất mạng thoáng qua - lần sau sẽ đồng bộ
+      }
+    };
+    document.addEventListener("visibilitychange", khiDoiTab);
+    return () => document.removeEventListener("visibilitychange", khiDoiTab);
+  }, [giaiDoan, luuLenMayChu]);
+
+  // Cảnh báo khi đóng trang lúc còn thay đổi chưa lưu
+  useEffect(() => {
+    if (!CHE_DO_MAY_CHU) return;
+    const canhBao = (e: BeforeUnloadEvent) => {
+      if (daLuuRef.current && dataRef.current !== daLuuRef.current) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", canhBao);
+    return () => window.removeEventListener("beforeunload", canhBao);
+  }, []);
+
+  const dangNhap = useCallback(
+    async (email: string, matKhau: string) => {
+      const phien = await mayChu.dangNhap(email, matKhau);
+      const conThayDoiChuaLuu =
+        daLuuRef.current !== null &&
+        dataRef.current !== daLuuRef.current &&
+        userIdRef.current === phien.userId;
+      if (conThayDoiChuaLuu) {
+        // Phiên hết hạn giữa chừng: giữ thay đổi đang có và lưu tiếp
+        setEmailDangNhap(phien.email);
+        setGiaiDoan("san-sang");
+        void luuLenMayChu();
+        return;
+      }
+      await taiTuMayChu();
+    },
+    [luuLenMayChu, taiTuMayChu]
+  );
+
+  const khoiTaoDuLieu = useCallback(
+    async (d: AppData) => {
+      const phienBan = await mayChu.taoDuLieu(d);
+      if (phienBan === null) {
+        // Thiết bị khác vừa tạo dữ liệu - dùng bản đó
+        await taiTuMayChu();
+        return;
+      }
+      xungDotRef.current = false;
+      phienBanRef.current = phienBan;
+      daLuuRef.current = d;
+      setData(d);
+      setTrangThaiLuu("da-luu");
+      setDaTaiXong(true);
+      setGiaiDoan("san-sang");
+    },
+    [taiTuMayChu]
+  );
+
+  const dangXuat = useCallback(async () => {
+    if (daLuuRef.current && dataRef.current !== daLuuRef.current) await luuLenMayChu();
+    await mayChu.dangXuat();
+    daLuuRef.current = null;
+    phienBanRef.current = 0;
+    userIdRef.current = null;
+    xungDotRef.current = false;
+    setData(taoDuLieuTrong());
+    setEmailDangNhap(null);
+    setTrangThaiLuu("da-luu");
+    setDaTaiXong(false);
+    setGiaiDoan("dang-nhap");
+  }, [luuLenMayChu]);
+
+  const docDuLieuCuTrenThietBi = useCallback(() => docLocalStorage(), []);
+  const thayTheToanBoDuLieu = useCallback((d: AppData) => setData(d), []);
 
   const themXe = useCallback((xe: Omit<Xe, "id">) => {
     const moi: Xe = { ...xe, id: uuidv4() };
@@ -406,15 +634,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const xoaTatCaDuLieu = useCallback(() => {
-    setData({
-      xeList: [],
-      taiXeList: [],
-      khachHangList: [],
-      loaiHangList: [],
-      nguoiBocHangList: [],
-      taiKhoanNganHangList: [],
-      chuyenList: [],
-    });
+    setData(taoDuLieuTrong());
   }, []);
 
   const value = useMemo<DataContextValue>(
@@ -449,6 +669,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       datDoiChieuThanhToan,
       khoiPhucDuLieuMau,
       xoaTatCaDuLieu,
+      cheDoMayChu: CHE_DO_MAY_CHU,
+      trangThaiLuu,
+      emailDangNhap,
+      dangXuat,
+      docDuLieuCuTrenThietBi,
+      thayTheToanBoDuLieu,
     }),
     [
       data,
@@ -481,10 +707,52 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       datDoiChieuThanhToan,
       khoiPhucDuLieuMau,
       xoaTatCaDuLieu,
+      trangThaiLuu,
+      emailDangNhap,
+      dangXuat,
+      docDuLieuCuTrenThietBi,
+      thayTheToanBoDuLieu,
     ]
   );
 
-  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
+  // Chế độ máy chủ: chưa vào được app thì hiện màn hình đăng nhập / tải dữ liệu
+  if (CHE_DO_MAY_CHU && giaiDoan !== "san-sang") {
+    return (
+      <ManHinhMayChu
+        giaiDoan={giaiDoan}
+        loiTai={loiTai}
+        dangNhap={dangNhap}
+        khoiTao={khoiTaoDuLieu}
+        thuLai={() => void taiTuMayChu()}
+        docDuLieuCu={docDuLieuCuTrenThietBi}
+      />
+    );
+  }
+
+  return (
+    <DataContext.Provider value={value}>
+      {children}
+      <Modal
+        open={trangThaiLuu === "xung-dot"}
+        closable={false}
+        maskClosable={false}
+        keyboard={false}
+        title="Dữ liệu đã được thay đổi ở thiết bị khác"
+        footer={[
+          <Button key="sao-luu" onClick={() => taiXuongFileSaoLuu(dataRef.current)}>
+            Tải bản sao lưu của máy này
+          </Button>,
+          <Button key="tai-lai" type="primary" onClick={() => void taiTuMayChu()}>
+            Tải lại dữ liệu mới
+          </Button>,
+        ]}
+      >
+        Có thiết bị khác vừa lưu dữ liệu. Để tránh ghi đè nhầm, thay đổi vừa rồi trên máy này chưa được lưu. Bạn hãy
+        tải lại dữ liệu mới, rồi nhập lại thay đổi nếu cần. Muốn giữ lại bản đang có trên máy này thì tải bản sao lưu
+        trước.
+      </Modal>
+    </DataContext.Provider>
+  );
 }
 
 export function useData(): DataContextValue {
