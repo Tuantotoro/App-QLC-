@@ -9,6 +9,23 @@ import BottomNav from "./BottomNav";
 import { useData } from "@/store/DataContext";
 import { tongHopTheoTaiKhoan } from "@/utils/aggregate";
 
+/** Chữ nhỏ ở góc phải thanh trên: cho biết dữ liệu đã lưu lên máy chủ chưa. */
+function TrangThaiLuuChip() {
+  const { cheDoMayChu, trangThaiLuu } = useData();
+  if (!cheDoMayChu) return null;
+  const cauHinh = {
+    "da-luu": { chu: "Đã lưu", mau: "#1B7A43" },
+    "dang-luu": { chu: "Đang lưu...", mau: "#8a8672" },
+    loi: { chu: "Lỗi lưu, đang thử lại", mau: "#C0392B" },
+    "xung-dot": { chu: "Chưa lưu", mau: "#C0392B" },
+  }[trangThaiLuu];
+  return (
+    <span style={{ fontSize: 12, color: cauHinh.mau, whiteSpace: "nowrap" }} role="status">
+      {cauHinh.chu}
+    </span>
+  );
+}
+
 /** Tổng số khoản chuyển khoản quá hạn chưa đối chiếu sao kê, trên mọi tài khoản. */
 function useSoKhoanQuaHan(): number {
   const { data } = useData();
@@ -130,6 +147,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </Typography.Text>
             )}
           </div>
+          <TrangThaiLuuChip />
         </Header>
         <Content
           className={!isDesktop ? "page-content-mobile-pad" : undefined}
